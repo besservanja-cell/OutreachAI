@@ -15,7 +15,7 @@ AI Cold Email Generator — a production-ready Next.js 14 SaaS that generates pe
 - Next.js 14 App Router + TypeScript strict mode
 - Tailwind CSS + shadcn/ui
 - Supabase: Postgres + Auth
-- OpenRouter API (meta-llama/llama-4-scout:free)
+- OpenRouter API (meta-llama/llama-3.3-70b-instruct:free)
 - LemonSqueezy for subscriptions + webhooks
 - Vercel deployment ready
 
@@ -72,7 +72,7 @@ Copy `.env.example` to `.env.local` and fill in:
 
 1. Sign up at [openrouter.ai](https://openrouter.ai)
 2. Create an API key
-3. Model used: `meta-llama/llama-4-scout:free`
+3. Model used: `meta-llama/llama-3.3-70b-instruct:free`
 
 ### 6. Run locally
 

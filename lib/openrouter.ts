@@ -39,7 +39,7 @@ Preferred tone: ${input.tone}
 Generate 3 cold email variants (professional, casual, bold). Return ONLY valid JSON with no markdown or extra text.`;
 
   const completion = await openai.chat.completions.create({
-    model: "meta-llama/llama-4-scout:free",
+    model: "meta-llama/llama-3.3-70b-instruct:free",
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },
