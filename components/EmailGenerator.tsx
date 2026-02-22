@@ -63,6 +63,7 @@ export function EmailGenerator({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const CHAR_LIMIT = 500;
 
   const handleCopy = async (index: number, text: string) => {
     await navigator.clipboard.writeText(text);
@@ -104,6 +105,36 @@ export function EmailGenerator({
     }
   };
 
+  const regenerate = async () => {
+    setError(null);
+    setVariants(null);
+    setLoading(true);
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          product,
+          prospectName,
+          company,
+          industry,
+          tone,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed to generate emails");
+      setVariants(data.variants);
+      onGenerated?.(data.variants);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const isFormValid = product.trim().length > 0 && prospectName.trim().length > 0 && company.trim().length > 0;
+
   return (
     <div className="space-y-6">
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -111,14 +142,16 @@ export function EmailGenerator({
           <Label htmlFor="product">Product / Service</Label>
           <Textarea
             id="product"
-            placeholder="Describe your product or service in 1-2 sentences..."
+            placeholder="E.g. OutreachAI: AI assistant that writes personalized cold emails in seconds."
             value={product}
             onChange={(e) => setProduct(e.target.value)}
             required
             className="mt-1.5"
             rows={3}
             disabled={disabled}
+            maxLength={CHAR_LIMIT}
           />
+          <div className="mt-1 text-right text-sm text-muted-foreground">{product.length}/{CHAR_LIMIT} characters</div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -182,20 +215,26 @@ export function EmailGenerator({
             </Select>
           </div>
         </div>
-
-        <Button type="submit" disabled={loading || disabled} className="w-full sm:w-auto">
-          {loading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Generating...
-            </>
-          ) : (
-            <>
-              <Mail className="mr-2 h-4 w-4" />
-              Generate Emails
-            </>
-          )}
-        </Button>
+        <div>
+          <Button
+            type="submit"
+            disabled={loading || disabled || !isFormValid}
+            className="w-full sm:w-auto"
+            title={!isFormValid ? "Please fill all required fields" : undefined}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Mail className="mr-2 h-4 w-4" />
+                Generate Emails
+              </>
+            )}
+          </Button>
+        </div>
       </form>
 
       {error && (
@@ -205,6 +244,7 @@ export function EmailGenerator({
       )}
 
       {variants && variants.length > 0 && (
+        <>
         <div className="grid gap-4 md:grid-cols-3">
           {variants.map((v, i) => (
             <Card
@@ -221,6 +261,9 @@ export function EmailGenerator({
                   <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium capitalize text-primary">
                     {v.tone}
                   </span>
+                  <span className="ml-2 rounded-full bg-muted/20 px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                    {v.body ? v.body.split(/\s+/).filter(Boolean).length : 0} words
+                  </span>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -236,7 +279,10 @@ export function EmailGenerator({
                     )}
                   </Button>
                 </div>
-                <p className="text-sm font-medium leading-tight">{v.subject}</p>
+                <div className="mt-2">
+                  <div className="text-xs font-semibold text-muted-foreground">Subject line</div>
+                  <p className="text-sm font-medium leading-tight">{v.subject}</p>
+                </div>
               </CardHeader>
               <CardContent className="space-y-2 pt-0">
                 <p className="whitespace-pre-wrap text-sm text-muted-foreground">
@@ -264,6 +310,12 @@ export function EmailGenerator({
             </Card>
           ))}
         </div>
+        <div className="mt-4">
+          <Button onClick={regenerate} disabled={loading || disabled || !isFormValid}>
+            Regenerate
+          </Button>
+        </div>
+        </>
       )}
     </div>
   );

@@ -85,6 +85,19 @@ function LandingContent() {
   const { user, loading } = useAuth();
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
+  const faqStructured = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: FAQ.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.a,
+      },
+    })),
+  };
+
   const handleCopyDemo = async (variant: (typeof DEMO_VARIANTS)[number], index: number) => {
     try {
       await navigator.clipboard.writeText(`${variant.subject}\n\n${variant.body}`);
@@ -256,6 +269,10 @@ function LandingContent() {
           <h2 className="mb-12 text-center text-2xl font-bold">
             Frequently Asked Questions
           </h2>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(faqStructured) }}
+          />
           <div className="mx-auto max-w-2xl space-y-6">
             {FAQ.map((item, i) => (
               <div key={i} className="rounded-lg border p-6">

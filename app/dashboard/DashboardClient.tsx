@@ -35,7 +35,9 @@ export function DashboardClient({
 }: DashboardClientProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"generator" | "history">("generator");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const usagePercent = creditsLimit > 0 ? (creditsUsed / creditsLimit) * 100 : 0;
+  const remaining = Math.max(0, (creditsLimit ?? 0) - (creditsUsed ?? 0));
 
   const handleSignOut = async () => {
     const supabase = createClient();
@@ -94,14 +96,16 @@ export function DashboardClient({
           </CardHeader>
           <CardContent>
             <Progress value={usagePercent} className="h-2" />
-            {creditsUsed >= creditsLimit && (
-              <p className="mt-2 text-sm text-destructive">
-                You&apos;ve reached your limit.{" "}
+            <p className="mt-2 text-sm text-muted-foreground">
+              You have <span className="font-medium">{remaining}</span> emails remaining
+            </p>
+
+            {remaining <= 0 && (
+              <div className="mt-3 rounded-md border border-yellow-300 bg-yellow-50 px-4 py-3 text-sm text-yellow-900">
                 <Link href="/billing" className="underline">
-                  Upgrade to continue
+                  You&apos;ve used all free emails. Upgrade to continue →
                 </Link>
-                .
-              </p>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -158,9 +162,12 @@ export function DashboardClient({
             </CardHeader>
             <CardContent>
               {history.length === 0 ? (
-                <p className="py-8 text-center text-muted-foreground">
-                  No emails yet. Generate your first one!
-                </p>
+                <div className="py-8 text-center text-muted-foreground">
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted/40">
+                    <Mail className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                  <p className="text-sm">No emails generated yet. Generate your first email above!</p>
+                </div>
               ) : (
                 <div className="space-y-4">
                   {history.map((item) => {
@@ -172,24 +179,33 @@ export function DashboardClient({
                           "variants" in raw
                         ? (raw as { variants: unknown[] }).variants ?? []
                         : [];
+                    const isExpanded = expandedId === item.id;
                     return (
                       <div
                         key={item.id}
                         className="rounded-lg border p-4"
                       >
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-start justify-between">
                           <div>
                             <p className="font-medium">
-                              {item.prospect_name || "Unknown"} @{" "}
-                              {item.prospect_company || "Unknown"}
+                              {item.prospect_name || "Unknown"} @ {item.prospect_company || "Unknown"}
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              {item.industry} •{" "}
-                              {new Date(item.created_at).toLocaleDateString()}
+                              {item.industry} • {new Date(item.created_at).toLocaleDateString()}
                             </p>
                           </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setExpandedId(isExpanded ? null : item.id)}
+                            >
+                              {isExpanded ? "Collapse" : "Expand"}
+                            </Button>
+                          </div>
                         </div>
-                        {Array.isArray(variants) && variants.length > 0 && (
+
+                        {isExpanded && Array.isArray(variants) && variants.length > 0 && (
                           <div className="mt-4 grid gap-2 sm:grid-cols-3">
                             {variants.slice(0, 3).map((v: { subject?: string; body?: string; tone?: string }, i: number) => (
                               <div
@@ -200,7 +216,7 @@ export function DashboardClient({
                                   {v.tone ?? "professional"}
                                 </span>
                                 <p className="mt-2 font-medium">{v.subject}</p>
-                                <p className="mt-1 line-clamp-2 text-muted-foreground">
+                                <p className="mt-1 text-sm text-muted-foreground">
                                   {v.body}
                                 </p>
                                 <Button

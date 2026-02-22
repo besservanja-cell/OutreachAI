@@ -4,7 +4,8 @@ import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Mail, CreditCard, ExternalLink } from "lucide-react";
+import CancelSubscriptionButton from "@/components/CancelSubscriptionButton";
+import { Mail } from "lucide-react";
 
 export default async function BillingPage() {
   const supabase = await createServerSupabaseClient();
@@ -62,80 +63,81 @@ export default async function BillingPage() {
           </p>
         </div>
 
-        <div className="mx-auto max-w-2xl space-y-6">
-          <Card>
-            <CardHeader>
-              <h2 className="font-semibold">Current Plan</h2>
-              <p className="text-sm text-muted-foreground">
-                Your subscription and usage details.
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between rounded-lg border p-4">
-                <div>
-                  <p className="font-medium">{planLabel}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {planDescription}
-                  </p>
-                </div>
-                <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
-                  {creditsUsed} / {creditsLimit} used
-                </span>
-              </div>
+        <div className="mx-auto max-w-4xl">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+            {[
+              {
+                id: "free",
+                title: "Free",
+                price: "$0",
+                desc: "5 emails lifetime",
+                included: ["5 generated emails", "Basic templates", "Community support"],
+              },
+              {
+                id: "starter",
+                title: "Starter",
+                price: "$9/mo",
+                desc: "100 emails per month",
+                included: ["100 emails / month", "Custom tones", "Priority support"],
+              },
+              {
+                id: "pro",
+                title: "Pro",
+                price: "$29/mo",
+                desc: "Unlimited emails per month",
+                included: ["Unlimited emails", "Team seats", "SLA support"],
+              },
+            ].map((p) => {
+              const isCurrent = p.id === plan;
+              return (
+                <Card key={p.id} className={isCurrent ? "border-primary/50 bg-primary/5" : ""}>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-lg font-semibold">{p.title}</h3>
+                        <p className="text-sm text-muted-foreground">{p.desc}</p>
+                      </div>
+                      <div className={isCurrent ? "text-primary font-bold" : "font-semibold"}>{p.price}</div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="mb-4 space-y-2">
+                      {p.included.map((it) => (
+                        <li key={it} className="text-sm">• {it}</li>
+                      ))}
+                    </ul>
+                    <div className="flex flex-col gap-2">
+                      {isCurrent ? (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Current plan</span>
+                          <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">{p.title}</span>
+                        </div>
+                      ) : (
+                        <Link href="/#pricing">
+                          <Button className="w-full">Upgrade Plan</Button>
+                        </Link>
+                      )}
 
-              {plan === "free" && (
-                <Link href="/#pricing">
-                  <Button className="w-full gap-2">
-                    <CreditCard className="h-4 w-4" />
-                    Upgrade Plan
-                  </Button>
-                </Link>
-              )}
+                      {p.id !== "free" && isCurrent && (
+                        <div className="mt-2 text-sm text-muted-foreground">
+                          Next billing date: <span className="font-medium">Not available — check your LemonSqueezy portal</span>
+                        </div>
+                      )}
 
-              {plan !== "free" && (
-                <div className="flex gap-4">
-                  <a
-                    href="https://app.lemonsqueezy.com/my-orders"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1"
-                  >
-                    <Button variant="outline" className="w-full gap-2">
-                      <ExternalLink className="h-4 w-4" />
-                      LemonSqueezy Customer Portal
-                    </Button>
-                  </a>
-                  {plan !== "pro" && (
-                    <Link href="/#pricing" className="flex-1">
-                      <Button className="w-full">Upgrade to Pro</Button>
-                    </Link>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <h2 className="font-semibold">Need Help?</h2>
-              <p className="text-sm text-muted-foreground">
-                Manage your subscription, update payment methods, or cancel from
-                the LemonSqueezy customer portal.
-              </p>
-            </CardHeader>
-            <CardContent>
-              <a
-                href="https://app.lemonsqueezy.com/help"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button variant="ghost" className="gap-2">
-                  <ExternalLink className="h-4 w-4" />
-                  LemonSqueezy Help Center
-                </Button>
-              </a>
-            </CardContent>
-          </Card>
+                      {p.id !== "free" && isCurrent && (
+                        <div className="mt-3">
+                          <a href="https://app.lemonsqueezy.com/my-orders" target="_blank" rel="noreferrer">
+                            <Button variant="outline" className="w-full mb-2">LemonSqueezy Customer Portal</Button>
+                          </a>
+                          <CancelSubscriptionButton />
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         </div>
       </main>
     </div>
