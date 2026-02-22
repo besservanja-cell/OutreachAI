@@ -68,7 +68,7 @@ const FAQ = [
   },
   {
     q: "Which AI model do you use?",
-    a: "We use OpenRouter with Meta's Llama 4 Scout model for fast, high-quality cold email generation.",
+    a: "We use OpenRouter with Meta's Llama 3.3 70B model for fast, high-quality cold email generation.",
   },
 ];
 

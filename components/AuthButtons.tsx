@@ -21,13 +21,16 @@ export function AuthButtons() {
     setLoading(true);
     setMessage(null);
 
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
+
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { error } = await supabase.auth.signUp({ email: trimmedEmail, password: trimmedPassword });
         if (error) throw error;
         setMessage({ type: "success", text: "Check your email to confirm your account." });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({ email: trimmedEmail, password: trimmedPassword });
         if (error) throw error;
         setMessage({ type: "success", text: "Signed in successfully!" });
         window.location.href = "/dashboard";
@@ -69,7 +72,9 @@ export function AuthButtons() {
           <Label htmlFor="auth-email">Email</Label>
           <Input
             id="auth-email"
-            type="email"
+            type="text"
+            inputMode="email"
+            autoComplete="email"
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
