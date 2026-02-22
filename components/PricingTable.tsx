@@ -96,11 +96,11 @@ export function PricingTable({ authenticated = false }: PricingTableProps) {
           key={plan.id}
           className={cn(
             "relative flex flex-col",
-            plan.highlighted && "border-primary shadow-lg ring-2 ring-primary/20"
+            plan.highlighted && "border-emerald-500 shadow-lg ring-2 ring-emerald-200"
           )}
         >
           {plan.highlighted && (
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-0.5 text-xs font-medium text-primary-foreground">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-emerald-500 px-3 py-0.5 text-xs font-medium text-emerald-50">
               Most Popular
             </div>
           )}
@@ -146,6 +146,11 @@ export function PricingTable({ authenticated = false }: PricingTableProps) {
                 plan.cta
               )}
             </Button>
+            {plan.id === "free" && (
+              <p className="mt-2 text-center text-xs text-muted-foreground">
+                No credit card required
+              </p>
+            )}
           </CardContent>
         </Card>
       ))}

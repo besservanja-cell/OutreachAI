@@ -61,13 +61,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const variants = await generateColdEmails({
-      product,
-      prospectName,
-      company,
-      industry,
-      tone,
-    });
+    const models = [
+      "google/gemini-2.0-flash-exp:free",
+      "deepseek/deepseek-r1:free",
+      "meta-llama/llama-3.3-70b-instruct:free",
+    ];
+
+    const input = { product, prospectName, company, industry, tone };
+    let variants: Awaited<ReturnType<typeof generateColdEmails>> | null = null;
+    let lastError: unknown = null;
+
+    for (const model of models) {
+      try {
+        variants = await generateColdEmails(input, model);
+        break;
+      } catch (err) {
+        lastError = err;
+        continue;
+      }
+    }
+
+    if (!variants) {
+      console.error("All OpenRouter models failed:", lastError);
+      return NextResponse.json(
+        { error: "AI service is temporarily busy, please try again in a few minutes." },
+        { status: 503 }
+      );
+    }
 
     const { error: insertError } = await admin.from("emails").insert({
       user_id: user.id,

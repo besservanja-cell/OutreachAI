@@ -15,7 +15,8 @@ export interface GenerateEmailsInput {
 }
 
 export async function generateColdEmails(
-  input: GenerateEmailsInput
+  input: GenerateEmailsInput,
+  model: string
 ): Promise<EmailVariant[]> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
@@ -39,7 +40,7 @@ Preferred tone: ${input.tone}
 Generate 3 cold email variants (professional, casual, bold). Return ONLY valid JSON with no markdown or extra text.`;
 
   const completion = await openai.chat.completions.create({
-    model: "meta-llama/llama-3.3-70b-instruct:free",
+    model,
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },

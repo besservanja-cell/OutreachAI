@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { PricingTable } from "@/components/PricingTable";
 import { AuthButtons } from "@/components/AuthButtons";
@@ -12,23 +13,25 @@ import {
   Shield,
   ChevronRight,
   Sparkles,
+  Lock,
+  Copy,
 } from "lucide-react";
 
 const DEMO_VARIANTS = [
   {
     tone: "Professional",
-    subject: "Streamlining operations for companies like [Company]",
-    body: "Hi [Name],\n\nI noticed [Company] has been scaling rapidly in the [Industry] space. Many teams we work with face similar challenges around [pain point].\n\nOur platform helps companies like yours [value prop]—typically seeing [result] within the first quarter.\n\nWould you be open to a brief 15-minute call to explore if this could be relevant for [Company]?\n\nBest regards",
+    subject: "Streamlining operations for teams like TechFlow",
+    body: "Hi Sarah Chen,\n\nI’ve been following TechFlow’s growth in the SaaS space and it’s impressive. Most teams we speak with reach a point where manual outreach slows them down and pipeline becomes unpredictable.\n\nOur platform helps SaaS companies like TechFlow automate personalized outreach while keeping messages tightly aligned to each prospect’s context—typically unlocking more replies within the first quarter.\n\nWould you be open to a quick 15-minute chat to see if this could fit your current outbound strategy?\n\nBest regards,\nThe OutreachAI Team",
   },
   {
     tone: "Casual",
-    subject: "Quick thought for [Company]",
-    body: "Hey [Name],\n\nHope you're doing well! I've been following [Company]'s growth in [Industry] and it's impressive.\n\nWe've been helping similar teams [value prop] without the usual headaches. Thought it might be worth a quick chat?\n\nNo pressure—just wanted to reach out. Let me know if you'd like to connect!\n\nCheers",
+    subject: "Quick thought for TechFlow",
+    body: "Hey Sarah,\n\nHope you’re doing well! I’ve been watching TechFlow in the SaaS space and love how you’re simplifying workflows for your customers.\n\nWe’ve been helping similar SaaS teams 3x the number of quality cold emails they send—without adding headcount or burning out the team. Thought it might be worth a quick look.\n\nIf you’re open to it, I’d love to share a few examples tailored to TechFlow.\n\nCheers,\nThe OutreachAI Team",
   },
   {
     tone: "Bold",
-    subject: "[Company] could 3x outreach without hiring",
-    body: "Hi [Name],\n\nStraight to the point: most [Industry] companies are leaving serious revenue on the table with manual outreach.\n\nWe help teams like [Company] [value prop]—our customers typically see [result] in under 90 days.\n\nI'd love to show you how. 15 minutes, no commitment. When works this week?\n\nLet's make it happen.",
+    subject: "TechFlow could 3x outreach without hiring",
+    body: "Hi Sarah,\n\nI’ll keep this short: most SaaS teams are leaving serious revenue on the table by relying on fully manual outreach.\n\nOutreachAI helps companies like TechFlow send highly personalized cold emails at scale—our customers typically see more replies and booked meetings in under 90 days.\n\nIf you’re open to it, I’d love 15 minutes to walk you through what this could look like for TechFlow.\n\nLet’s make it happen,\nThe OutreachAI Team",
   },
 ];
 
@@ -50,6 +53,12 @@ const FEATURES = [
     title: "Privacy First",
     description:
       "Your data stays yours. We never share prospect information or use it for training.",
+  },
+  {
+    icon: Lock,
+    title: "No Credit Card",
+    description:
+      "Start generating emails instantly. No payment required to try OutreachAI.",
   },
 ];
 
@@ -74,10 +83,23 @@ const FAQ = [
 
 function LandingContent() {
   const { user, loading } = useAuth();
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+
+  const handleCopyDemo = async (variant: (typeof DEMO_VARIANTS)[number], index: number) => {
+    try {
+      await navigator.clipboard.writeText(`${variant.subject}\n\n${variant.body}`);
+      setCopiedIndex(index);
+      setTimeout(() => {
+        setCopiedIndex((current) => (current === index ? null : current));
+      }, 2000);
+    } catch (error) {
+      console.error("Failed to copy demo email:", error);
+    }
+  };
 
   return (
-    <div className="min-h-screen">
-      <header className="border-b">
+    <div className="min-h-screen bg-gradient-to-b from-sky-50 via-white to-violet-50 animated-gradient">
+      <header className="border-b bg-background/80 backdrop-blur">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2 font-semibold">
             <Mail className="h-6 w-6 text-primary" />
@@ -109,7 +131,10 @@ function LandingContent() {
       <main>
         <section className="container mx-auto px-4 py-20 md:py-32">
           <div className="mx-auto max-w-3xl text-center">
-            <h1 className="text-4xl font-bold tracking-tight md:text-6xl">
+            <div className="inline-flex items-center justify-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+              ✦ Trusted by 500+ sales teams
+            </div>
+            <h1 className="mt-4 text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl">
               AI Cold Emails That{" "}
               <span className="text-primary">Actually Get Replies</span>
             </h1>
@@ -131,6 +156,10 @@ function LandingContent() {
                 </Button>
               </Link>
             </div>
+            <p className="mt-4 text-xs text-muted-foreground sm:text-sm">
+              5,000+ emails generated <span className="mx-2">•</span> 3 tone variants{" "}
+              <span className="mx-2">•</span> Free to start
+            </p>
           </div>
         </section>
 
@@ -144,20 +173,46 @@ function LandingContent() {
               Sign up to generate your own.
             </p>
             <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-3">
-              {DEMO_VARIANTS.map((v, i) => (
-                <div
-                  key={i}
-                  className="rounded-lg border bg-card p-6 shadow-sm"
-                >
-                  <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-                    {v.tone}
-                  </span>
-                  <p className="mt-3 font-medium">{v.subject}</p>
-                  <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">
-                    {v.body}
-                  </p>
-                </div>
-              ))}
+              {DEMO_VARIANTS.map((v, i) => {
+                const toneBorderClass =
+                  v.tone === "Professional"
+                    ? "border-l-2 border-sky-400"
+                    : v.tone === "Casual"
+                    ? "border-l-2 border-emerald-400"
+                    : "border-l-2 border-orange-400";
+
+                return (
+                  <div
+                    key={i}
+                    className={`relative rounded-lg border bg-card p-6 shadow-sm ${toneBorderClass}`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                        {v.tone}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                        type="button"
+                        onClick={() => handleCopyDemo(v, i)}
+                        aria-label={copiedIndex === i ? "Copied" : "Copy demo email"}
+                      >
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <p className="mt-3 font-medium">{v.subject}</p>
+                    <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">
+                      {v.body}
+                    </p>
+                    {copiedIndex === i && (
+                      <p className="mt-2 text-xs font-medium text-emerald-600">
+                        Copied to clipboard
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -167,7 +222,7 @@ function LandingContent() {
           <p className="mx-auto mb-12 max-w-xl text-center text-muted-foreground">
             Built for founders, sales teams, and anyone who sends cold outreach.
           </p>
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
             {FEATURES.map((f, i) => (
               <div
                 key={i}
@@ -242,6 +297,20 @@ function LandingContent() {
           <p className="mt-6 text-center text-sm text-muted-foreground">
             © {new Date().getFullYear()} OutreachAI. All rights reserved.
           </p>
+          <div className="mt-4 flex flex-col items-center justify-between gap-2 text-xs text-muted-foreground md:flex-row">
+            <div className="flex gap-4">
+              <Link href="/privacy" className="hover:text-foreground">
+                Privacy Policy
+              </Link>
+              <span className="text-muted-foreground">|</span>
+              <Link href="/terms" className="hover:text-foreground">
+                Terms of Service
+              </Link>
+            </div>
+            <p className="text-center md:text-right">
+              Made with ❤️ for sales teams
+            </p>
+          </div>
         </div>
       </footer>
     </div>
